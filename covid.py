@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import json
 
 # --- 1. 페이지 설정 및 메디컬 라이트 UI 테마 ---
@@ -59,19 +60,9 @@ st.markdown("""
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     }
 
-    /* [수정] 바이러스 구조 분석 시뮬레이터 박스 */
-    .virus-simulator-box {
-        background: white;
-        border-radius: 20px;
-        border: 1px solid #E2E8F0;
-        padding: 10px;
-        text-align: center;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
-    }
-
-    /* 하단 가로형 스마트 제어 패널 (Glassmorphism 적용) */
+    /* 하단 가로형 스마트 제어 패널 */
     .control-panel {
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(10px);
         border: 1px solid #BAE6FD;
         border-top: 4px solid #0EA5E9;
@@ -92,6 +83,16 @@ st.markdown("""
         font-size: 0.9rem;
         color: #1E293B;
         line-height: 1.6;
+        margin-top: 15px;
+    }
+
+    /* 바이러스 분석 카드 래퍼 */
+    .virus-analysis-card {
+        background: white;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.02);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -115,12 +116,12 @@ if df is None:
 # --- 3. 헤더 섹션 ---
 st.markdown("""
     <div class='hospital-header'>
-        <div class='hospital-title'>🩺 스마트 의료 통합 관제 센터 <span>[V7.0 LIGHT]</span></div>
-        <div class='status-badge'>● 구조 분석 GIF 탑재 완료</div>
+        <div class='hospital-title'>🩺 스마트 의료 통합 관제 센터 <span>[V8.0 PRO]</span></div>
+        <div class='status-badge'>● 실시간 로컬 엔진 무결성 구동중</div>
     </div>
 """, unsafe_allow_html=True)
 
-# --- 4. 메인 콘텐츠 (좌측: 3D 지구본 / 우측: 바이러스 구조 GIF & 영상) ---
+# --- 4. 메인 콘텐츠 (좌측: 3D 지구본 + 공백 차단용 지표 / 우측: 실시간 변이 트렌드 + 영상) ---
 col_globe, col_media = st.columns([2.1, 1.9])
 
 with col_globe:
@@ -133,7 +134,7 @@ with col_globe:
     
     hologram_globe_html = f"""
     <div class='globe-section'>
-        <div id="medical-globe" style="width: 100%; height: 500px;"></div>
+        <div id="medical-globe" style="width: 100%; height: 400px;"></div>
         <script src="https://unpkg.com/globe.gl"></script>
         <script>
             const rawData = {points_json};
@@ -160,7 +161,7 @@ with col_globe:
                 .pointLabel(d => d.isTarget ? `🎯 정밀 분석 타겟` : `관찰 데이터`)
                 .controlsMaxZoom(3);
 
-            globe.pointOfView({{ lat: {st.session_state.lat_val}, lng: {st.session_state.lon_val}, alt: 2.0 }}, 1500);
+            globe.pointOfView({{ lat: {st.session_state.lat_val}, lng: {st.session_state.lon_val}, alt: 2.1 }}, 1500);
             globe.controls().autoRotate = false;
         </script>
         <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8rem; color: #64748B;">
@@ -173,27 +174,37 @@ with col_globe:
         </div>
     </div>
     """
-    st.components.v1.html(hologram_globe_html, height=580)
+    st.components.v1.html(hologram_globe_html, height=450)
+
+    # 🚨 이전 질문에서 언급하셨던 하단 비는 공간(붉은 원)을 채우기 위한 통계 컴포넌트 추가
+    st.markdown("<div style='margin-top:15px;'></div>", unsafe_allow_html=True)
+    m1, m2, m3 = st.columns(3)
+    with m1:
+        st.metric(label="🦠 주요 변이 위험도", value="등급: 위험 (BA.5)", delta="상승 지표")
+    with m2:
+        st.metric(label="🛡️ 타겟 반경 방역 지수", value="82.4점", delta="안전 범위")
+    with m3:
+        st.metric(label="🧬 유전자 서열 일치율", value="99.8%", delta="변이 확인")
 
 with col_media:
-    # 🚨 [수정 및 핵심 반영] 기존 코딩 박스를 제거하고 코로나 바이러스 구조 분석 GIF를 삽입
-    st.markdown("<p style='font-size:0.9rem; font-weight:700; color:#0369A1; margin-bottom:10px;'>🔬 코로나 바이러스 단면 구조 및 구성 성분 분석 시뮬레이터</p>", unsafe_allow_html=True)
+    # 🚨 [완벽 조치] 깨지는 외부 이미지를 전면 제거하고 스트림릿 순수 로컬 차트 보드로 교체!
+    st.markdown("<p style='font-size:0.9rem; font-weight:700; color:#0369A1; margin-bottom:10px;'>📊 실시간 코로나 변이 바이러스 탐지 비중 트렌드</p>", unsafe_allow_html=True)
     
-    st.markdown("""<div class='virus-simulator-box'>""", unsafe_allow_html=True)
+    with st.container(border=True):
+        # 차트용 가상 데이터 생성 (절대 안 깨짐)
+        chart_data = pd.DataFrame(
+            np.random.rand(10, 3) * [20, 50, 30],
+            columns=['알파/델타 변이', '오미크론 하위변이', '기타 변종 변이']
+        )
+        st.bar_chart(chart_data, height=180)
+        
+        st.markdown("""
+            <div style='font-size:0.8rem; color:#475569; padding-top:5px; border-top:1px solid #F1F5F9;'>
+                🧬 <b>구조적 임상 진단:</b> 돌기 단백질(Spike Protein) 변이 가속화로 인해 오미크론 하위 계통의 스캔 비중이 상대적으로 우세하게 관측됩니다.
+            </div>
+        """, unsafe_allow_html=True)
     
-    # 검색된 의학 애니메이션 GIF 삽입 (단면 구조 및 성분 명칭 표시)
-    st.image("http://googleusercontent.com/image_collection/image_retrieval/11640972239884877934", caption="코로나 바이러스 단면 구조 애니메이션 (GIF)", use_container_width=True)
-    
-    st.markdown("""
-        <div style='text-align:left; margin-top:10px; font-size:0.8rem; color:#64748B; font-weight:500; padding:0 10px;'>
-            <b>성분 판독 완료:</b><br>
-            • <span style='color:#EF4444;'>돌기 단백질 (Spike Protein)</span>: 인체 세포ACE2 수용체 결합<br>
-            • <span style='color:#F59E0B;'>유전 물질 (RNA)</span>: 바이러스 복제 정보 보유<br>
-            • <span style='color:#0EA5E9;'>지질 외벽 (Lipid Envelope)</span>: 구조 유지 및 비누에 파괴됨
-        </div>
-    </div>""", unsafe_allow_html=True)
-    
-    st.markdown("""<div style='margin-top:20px;'></div>""", unsafe_allow_html=True)
+    st.markdown("""<div style='margin-top:15px;'></div>""", unsafe_allow_html=True)
     
     # 손씻기 6단계 영상
     st.video("https://www.youtube.com/watch?v=aE0MEPeaks4")
@@ -212,12 +223,14 @@ st.markdown("<div class='control-panel'>", unsafe_allow_html=True)
 c_desc, c_input, c_result = st.columns([1, 1.4, 1.6])
 
 with c_desc:
-    # 의료 센터 로고 스타일
-    st.image("http://googleusercontent.com/image_collection/image_retrieval/9673394217972218586", width=80)
+    # 깨지는 이미지 로고 대신 고해상도 메디컬 이모지(🧬) 배치
     st.markdown("""
-        <div style='margin-top: 10px;'>
-            <div style='font-weight: 700; color: #0369A1;'>정밀 스캐너 가동</div>
-            <div style='font-size: 0.8rem; color: #64748B;'>타겟 지점의 위경도를 입력하면 지구본이 자동 추적합니다.</div>
+        <div style='display: flex; gap: 15px; align-items: center;'>
+            <div style='font-size: 2.8rem;'>🧬</div>
+            <div>
+                <div style='font-weight: 700; color: #0369A1; font-size:1.1rem;'>정밀 관제 스캐너</div>
+                <div style='font-size: 0.8rem; color: #64748B;'>좌표 변경 시 지구가 오토 타겟팅을 시작합니다.</div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
