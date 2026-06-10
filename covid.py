@@ -3,237 +3,230 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 
-# --- 1. 페이지 설정 및 완전 검정(Pure Black) 미니멀 테마 ---
+# --- 1. 임상/의료 연구실 컨셉 테마 설정 ---
 st.set_page_config(
-    page_title="COVID-19 위험 분석 시스템",
-    page_icon="▪️",
+    page_title="EPIDEMIC BIO-MONITORING SYSTEM",
+    page_icon="🩺",
     layout="wide",
 )
 
-# 불필요한 장식을 모두 걷어낸 미니멀리즘 CSS (한국어 폰트 최적화)
+# 대학병원/질병관리청 대시보드 스타일의 딥 다크 메디컬 Teal & Slate UI
 st.markdown("""
     <style>
-    /* 전체 배경을 완전한 검정색(#000000)으로 통일 */
-    .stApp { background-color: #000000; color: #FFFFFF; font-family: 'Noto Sans KR', sans-serif; }
-    
-    /* 미니멀 헤더 라인 */
-    .title-container {
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;500;700&display=swap');
+
+    .stApp { 
+        background-color: #0B111E; 
+        color: #E2E8F0;
+        font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    /* 상단 메디컬 센터 타이틀 바 */
+    .medical-header {
+        border-bottom: 3px solid #0D9488;
+        padding-bottom: 12px;
+        margin-bottom: 25px;
         display: flex;
-        align-items: baseline;
         justify-content: space-between;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #222222;
-        margin-bottom: 30px;
+        align-items: center;
     }
-    .main-title { font-size: 1.4rem; font-weight: 500; letter-spacing: -0.5px; color: #FFFFFF; }
-    .sub-title { color: #666666; font-size: 0.8rem; font-family: monospace; }
-    
-    /* 박스 테두리를 최소화한 미니멀 프레임 */
-    .map-frame, .minimal-card {
-        background-color: #000000;
-        border: 1px solid #222222;
-        border-radius: 0px; /* 라운드 제거로 더 날카롭고 미니멀하게 */
-        padding: 20px;
-        margin-bottom: 20px;
+    .medical-title {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #0EA5E9;
+        letter-spacing: -1px;
+    }
+    .medical-title span {
+        color: #0D9488;
+    }
+    .live-indicator {
+        background-color: rgba(13, 148, 136, 0.1);
+        border: 1px solid #0D9488;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        color: #2DD4BF;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* 메인 임상 맵 프레임 */
+    .map-container {
+        background: #141B2D;
+        border: 1px solid #1E293B;
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 하단 가로형 고정 임상 분석 제어판 (절대 깨지지 않는 구조) */
+    .clinical-panel {
+        background: #141B2D;
+        border-top: 4px solid #38BDF8;
+        border-radius: 12px;
+        padding: 22px;
+        margin-top: 25px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    /* 의학 정보 컴포넌트 */
+    div[data-baseweb="input"] { background-color: #0B111E !important; border: 1px solid #334155 !important; color: #fff !important; }
+    .clinical-badge {
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-align: center;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
     }
     
-    /* 검색 컨테이너 */
-    .search-container {
-        background-color: #000000;
-        border: 1px solid #222222;
-        border-radius: 0px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-    
-    /* 탭 메뉴 단순화 */
-    .stTabs [data-baseweb="tab-list"] { gap: 20px; background-color: #000000; }
-    .stTabs [data-baseweb="tab"] { color: #555555; font-size: 0.9rem; font-weight: 500; }
-    .stTabs [aria-selected="true"] { color: #FFFFFF !important; border-bottom-color: #FFFFFF !important; }
-    
-    /* 메트릭 라이브러리 커스텀 라인 */
-    div[data-testid="stMetric"] {
-        border-left: 1px solid #222222;
-        padding-left: 15px;
+    .med-instruction {
+        background: rgba(14, 165, 233, 0.05);
+        border-left: 4px solid #0EA5E9;
+        padding: 12px;
+        border-radius: 0 8px 8px 0;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        color: #94A3B8;
     }
     </style>
 """, unsafe_allow_html=True)
 
 
-# --- 2. 데이터 로드 ---
+# --- 2. 역학 조사 데이터 로드 ---
 @st.cache_data
-def load_data():
+def load_epidemic_data():
     file_name = "covid_risk_analysis_result.csv"
     try:
         try: return pd.read_csv(file_name, encoding="utf-8")
         except: return pd.read_csv(file_name, encoding="cp949")
-    except:
-        return None
+    except: return None
 
-df_covid = load_data()
+df = load_epidemic_data()
 
-if df_covid is None:
-    st.error("데이터 파일을 찾을 수 없습니다.")
+if df is None:
+    st.error("🔬 임상 분석 에러: 원격지 'covid_risk_analysis_result.csv' 코어 데이터를 로드하지 못했습니다.")
     st.stop()
 
 
-# --- 3. 미니멀리스트 컬러 매핑 ---
-colors_map = {0: '#22C55E', 1: '#EAB308', 2: '#EF4444'} 
-risk_dict = {0: '낮은 위험군', 1: '중간 위험군', 2: '높은 위험군'}
+# --- 3. 임상 위험도 및 메디컬 컬러 매핑 ---
+# 0: 안전(Teal), 1: 주의(Orange), 2: 고위험(Crimson)
+med_colors = {0: '#0D9488', 1: '#EA580C', 2: '#DC2626'}
+med_status = {
+    0: '🟢 LEVEL I: NORMAL AREA (안정 수준)', 
+    1: '🟠 LEVEL II: WATCH AREA (추적·경계 관찰 필요)', 
+    2: '🔴 LEVEL III: BIO-HAZARD AREA (감염 고위험 요격 구역)'
+}
 
 
-# --- 4. 미니멀 헤더 및 메트릭 현황 ---
+# --- 4. 메인 대시보드 상단 바 ---
 st.markdown("""
-    <div class='title-container'>
-        <div class='main-title'>COVID-19 위험 분석 시스템</div>
-        <div class='sub-title'>STATUS: LIVE // SYSTEM.ONLINE</div>
+    <div class='medical-header'>
+        <div class='medical-title'>🩺 CDC-BIOMETRIC INDEXING SYSTEM <span>[EPIDEMIC-4.0]</span></div>
+        <div class='live-indicator'>● HOSP-NET LINKED (EMERGENCY_MODE)</div>
     </div>
 """, unsafe_allow_html=True)
 
-# 라인을 최소화한 원블랙 지표 판넬
-m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-with m_col1: st.metric(label="글로벌 위험도 평균", value="LV. 1.84", delta="-0.02", delta_color="inverse")
-with m_col2: st.metric(label="위중증 병상 가동률", value="42.3%", delta="-1.2%")
-with m_col3: st.metric(label="백신 3차 접종률", value="78.9%", delta="+0.4%")
-with m_col4: st.metric(label="주요 모니터링 변이", value="XBB / KP.3", delta="안정세")
 
-st.markdown("<br>", unsafe_allow_html=True)
+# --- 5. 2분할 메인 레이아웃 (좌측: 글로벌 역학 지도 / 우측: 의학 참고 비디오 및 가이드) ---
+col_left_map, col_right_media = st.columns([2.2, 1.8])
 
-# 탭 구조 단순화
-tab1, tab2, tab3 = st.tabs(["[01] 글로벌 지도 현황", "[02] 지정 구역 심층 분석", "[03] 방역 지침 안내"])
-
-
-# --- 5. [탭 1] 글로벌 지도 현황 ---
-with tab1:
-    st.markdown("<div class='map-frame'>", unsafe_allow_html=True)
+with col_left_map:
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#0EA5E9; margin-bottom:5px;'>🌐 GLOBAL GEOGRAPHIC PATHOGEN TRACKING MAP</p>", unsafe_allow_html=True)
+    st.markdown("<div class='map-container'>", unsafe_allow_html=True)
     
-    # 지도의 디테일을 모두 숨긴 미니멀 다크 매터 테마
-    m_global = folium.Map(location=[25, 20], zoom_start=2.2, tiles="CartoDB dark_matter")
+    # 임상 느낌을 주는 깔끔한 CartoDB Dark Matter 맵 적용
+    m = folium.Map(location=[25, 15], zoom_start=1.8, tiles="CartoDB dark_matter")
     
-    for i in range(len(df_covid)):
-        cluster = int(df_covid.iloc[i]['cluster'])
+    for i in range(len(df)):
+        cluster = int(df.iloc[i]['cluster'])
         folium.CircleMarker(
-            location=[df_covid.iloc[i]['위도'], df_covid.iloc[i]['경도']],
-            radius=3.5, 
-            color=colors_map[cluster],
+            location=[df.iloc[i]['위도'], df.iloc[i]['경도']],
+            radius=4,
+            color=med_colors[cluster],
             fill=True,
-            fill_color=colors_map[cluster],
-            fill_opacity=0.8,
-            popup=f"{df_covid.iloc[i].get('국가_지역', '지역')} : {risk_dict[cluster]}"
-        ).add_to(m_global)
-    
-    st_folium(m_global, width=1400, height=500, key="global_minimal_map")
+            fill_color=med_colors[cluster],
+            fill_opacity=0.4,
+            weight=1,
+            popup=f"BIO-STATUS LEVEL: {cluster}"
+        ).add_to(m)
+        
+    st_folium(m, width=780, height=450, key="epidemic_clinical_map")
     st.markdown("</div>", unsafe_allow_html=True)
+
+with col_right_media:
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#0D9488; margin-bottom:5px;'>📹 CLINICAL REFERENCE VIDEO: 감염 예방의 기적</p>", unsafe_allow_html=True)
     
-    # 인덱스 범례 최소화 표시
-    st.markdown(
-        "<div style='text-align: right; font-size: 0.75rem; color: #666666; font-family: monospace;'> "
-        "<span style='color:#EF4444;'>■</span> 고위험 &nbsp;&nbsp; "
-        "<span style='color:#EAB308;'>■</span> 중간위험 &nbsp;&nbsp; "
-        "<span style='color:#22C55E;'>■</span> 저위험"
-        "</div>", 
-        unsafe_allow_html=True
-    )
+    # 요청하신 KBS 뉴스 올바른 손씻기 방법 영상 임베드 및 동기화
+    st.video("https://www.youtube.com/watch?v=_fhiA1-Qd34")
+    
+    # 영상 내용 기반의 초정밀 의학 아카이브 노트 
+    st.markdown("""
+        <div class='med-instruction'>
+            <b style='color:#FFF; font-size:0.9rem;'>🔬 임상 의학 가이드: 30초의 기적 (KBS 분석 제공)</b><br>
+            • <b>감염병 70% 차단:</b> 수시로 비누 거품을 내어 <b>30초 이상</b> 손을 세척할 시 콜레라, 대장균, 식중독, 황색포도상구균 등의 주요 병원균을 차단할 수 있습니다.<br>
+            • <b>맹점 구역(Blind Spot):</b> 일반 세척 시 <b>손톱 주변, 손끝, 손바닥 가장자리</b>에 형광물질(세균 모사)이 그대로 잔류함이 검증되었습니다.<br>
+            • <b>올바른 6단계 수칙:</b> 1) 손바닥 비비기 2) 손가락 교차 3) 엄지손가락 회전 문지르기 4) 손끝을 손바닥에 문질러 손톱 밑까지 완벽하게 소독하십시오.<br>
+            • <b>얼굴 접촉 차단:</b> 인간은 시간당 평균 36회 이상 손으로 얼굴(눈, 코, 입)을 무의식적으로 접촉하므로 점막 감염의 핵심 통로가 됩니다.
+        </div>
+    """, unsafe_allow_html=True)
 
 
-# --- 6. 하단 미니멀 검색 컨트롤 바 ---
-st.markdown("<div class='search-container'>", unsafe_allow_html=True)
-st.markdown("<div style='font-size: 0.85rem; color: #666666; margin-bottom: 15px;'>// 역학조사 좌표 분석 검색 엔진</div>", unsafe_allow_html=True)
+# --- 6. 하단 3분할 가로형 의학 콘솔 패널 (절대 깨지지 않는 구조) ---
+st.markdown("<div class='clinical-panel'>", unsafe_allow_html=True)
+col_sim_title, col_coords, col_prediction = st.columns([1.1, 1.4, 1.5])
 
-input_col1, input_col2, result_col = st.columns([1, 1, 2])
+# [6-1] 임상 모니터 센터 상태창
+with col_sim_title:
+    st.markdown("""
+        <div style='border-left: 3px solid #38BDF8; padding-left: 12px;'>
+            <span style='color: #64748B; font-size: 0.75rem; font-weight: bold; font-family: "JetBrains Mono";'>SECTION A: RADAR MATRIX</span>
+            <div style='font-size: 0.9rem; font-weight: bold; margin-top: 5px; color: #E2E8F0;'>역학 검사 좌표 지정</div>
+            <div style='font-size: 0.75rem; color: #475569; margin-top: 3px;'>위경도 기준 반경 500km 내 생체 매트릭스를 추적합니다.</div>
+        </div>
+    """, unsafe_allow_html=True)
 
-with input_col1:
-    lat = st.number_input("위도 (LATITUDE)", value=10.8, format="%.4f")
-with input_col2:
-    lon = st.number_input("경도 (LONGITUDE)", value=106.6, format="%.4f")
+# [6-2] 위도 및 경도 좌표 스캐너 인풋
+with col_coords:
+    st.markdown("<span style='color: #38BDF8; font-size: 0.75rem; font-weight: bold; font-family: \"JetBrains Mono\";'>PATIENT COORDINATES SCANNER</span>", unsafe_allow_html=True)
+    c_lat, c_lon = st.columns(2)
+    with c_lat:
+        lat = st.number_input("LATITUDE", value=10.82, format="%.2f", label_visibility="collapsed")
+    with c_lon:
+        lon = st.number_input("LONGITUDE", value=106.63, format="%.2f", label_visibility="collapsed")
+    st.caption("🚨 지정 좌표 반경의 원격 병원균 클러스터 인덱스를 반환합니다.")
 
-near_df = df_covid[(df_covid['위도'] >= lat-5) & (df_covid['위도'] <= lat+5) & 
-                   (df_covid['경도'] >= lon-5) & (df_covid['경도'] <= lon+5)]
-
-with result_col:
-    st.markdown("<div style='margin-top: 4px;'></div>", unsafe_allow_html=True)
+# [6-3] 미생물 오염도 및 위험 구역 임상 예측 결과창
+with col_prediction:
+    # 필터링 기법으로 반경 내 클러스터 요격
+    near_df = df[(df['위도'] >= lat-5) & (df['위도'] <= lat+5) & 
+                 (df['경도'] >= lon-5) & (df['경도'] <= lon+5)]
+    
+    st.markdown("<span style='color: #2DD4BF; font-size: 0.75rem; font-weight: bold; font-family: \"JetBrains Mono\";'>EPIDEMIC FORECAST REPORT</span>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
+    
     if not near_df.empty:
         main_cluster = int(near_df['cluster'].value_counts().idxmax())
-        st.markdown(
-            f"<div style='border: 1px solid #222222; padding: 15px; font-size: 0.9rem;'>"
-            f"분석 결과: 해당 반경은 <span style='color: {colors_map[main_cluster]}; font-weight: bold;'>[{risk_dict[main_cluster]}]</span> 우세 지역입니다."
-            f"</div>", 
-            unsafe_allow_html=True
-        )
-    else:
-        st.markdown(
-            f"<div style='border: 1px solid #222222; padding: 15px; font-size: 0.9rem; color: #666666;'>"
-            f"분석 결과: 반경 내 수집 데이터 없음 (안전 혹은 미체크 지역)"
-            f"</div>", 
-            unsafe_allow_html=True
-        )
-st.markdown("</div>", unsafe_allow_html=True)
-
-
-# --- 7. [탭 2] 지정 지역 집중 분석 지도 ---
-with tab2:
-    st.markdown("<div class='map-frame'>", unsafe_allow_html=True)
-    m_local = folium.Map(location=[lat, lon], zoom_start=5, tiles="CartoDB dark_matter")
-    
-    for i in range(len(df_covid)):
-        cluster = int(df_covid.iloc[i]['cluster'])
-        folium.CircleMarker(
-            location=[df_covid.iloc[i]['위도'], df_covid.iloc[i]['경도']],
-            radius=3.5, 
-            color=colors_map[cluster], 
-            fill=True, 
-            fill_color=colors_map[cluster],
-            fill_opacity=0.35
-        ).add_to(m_local)
+        target_color = med_colors[main_cluster]
+        target_text = med_status[main_cluster]
         
-    # 미니멀리즘 기본 마커
-    folium.Marker(
-        location=[lat, lon],
-        popup="지정 분석 좌표"
-    ).add_to(m_local)
-    
-    st_folium(m_local, width=1400, height=500, key="local_minimal_map")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-# --- 8. [탭 3] 미니멀리스트 방역 수칙 & 비디오 (임베드 링크 수정 완료) ---
-with tab3:
-    col_video, col_text = st.columns([5, 6])
-    
-    with col_video:
-        st.markdown("<div class='minimal-card'>", unsafe_allow_html=True)
-        st.markdown("<div style='font-size:0.9rem; margin-bottom:15px; color:#FFFFFF;'>// 질병관리청 공식 예방 가이드</div>", unsafe_allow_html=True)
-        
-        # 보안 차단을 우회하기 위해 임베드 전용 주소(youtube.com/embed/...) 구문 사용
-        st.video("https://www.youtube.com/embed/AunK7E2S58g")
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-    with col_text:
-        st.markdown("<div class='minimal-card'>", unsafe_allow_html=True)
-        st.markdown("<div style='font-size:0.9rem; margin-bottom:15px; color:#FFFFFF;'>// WHO 감염병 예방 핵심 수칙</div>", unsafe_allow_html=True)
-        
-        # 선과 텍스트로만 이루어진 극도의 미니멀 레이아웃
-        st.markdown("""
-            <div style='display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.85rem;'>
-                <div style='border-top: 1px solid #333333; padding-top: 10px;'>
-                    <span style='color: #666666;'>01. 올바른 손 씻기</span><br>
-                    <span style='color: #FFFFFF;'>흐르는 물에 비누로 30초 이상 빈틈없이 씻기.</span>
-                </div>
-                <div style='border-top: 1px solid #333333; padding-top: 10px;'>
-                    <span style='color: #666666;'>02. 주기적 환기</span><br>
-                    <span style='color: #FFFFFF;'>밀폐된 실내 공간은 하루 3회 이상 자연 환기.</span>
-                </div>
-                <div style='border-top: 1px solid #333333; padding-top: 10px;'>
-                    <span style='color: #666666;'>03. 기침 예절</span><br>
-                    <span style='color: #FFFFFF;'>기침이나 재채기 시 옷소매 안쪽으로 입 가리기.</span>
-                </div>
-                <div style='border-top: 1px solid #333333; padding-top: 10px;'>
-                    <span style='color: #666666;'>04. 마스크 착용</span><br>
-                    <span style='color: #FFFFFF;'>밀집도가 높은 대중교통 및 의료기관 내 착용 권고.</span>
-                </div>
-            </div>
-            <div style='margin-top: 35px; padding: 15px; border: 1px solid #333333; font-size: 0.8rem; color: #888888;'>
-                ⚠️ 공지사항: 호흡기 이상 증상 발생 시, 일반 병의원 방문 전에 보건소 또는 1339 콜센터에 사전 문의를 권장합니다.
+        # 임상 등급 결과 카드 표출
+        st.markdown(f"""
+            <div class='clinical-badge' style='background-color: {target_color}18; color: {target_color}; border: 1px solid {target_color}88;'>
+                {target_text}
             </div>
         """, unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # 임상 수치에 따른 처방전 메시지 분기 활성화
+        if main_cluster == 2:
+            st.error("☣️ 비상 지침: 고감염성 구역입니다. N95 마스크를 상시 착용하고 즉시 6단계 손 위생 수칙을 가동하십시오.")
+        elif main_cluster == 1:
+            st.warning("⚠️ 모니터링 요망: 산발적 병원균 이동 경로입니다. 개인 방역 및 얼굴 터치 금지 수칙을 강화하십시오.")
+        else:
+            st.success("🔬 청정 판정: 대조군 대비 무해한 수준의 안정선입니다. 표준 위생 관리를 유지하십시오.")
+            
+    else:
+        st.markdown("<div class='clinical-badge' style='background-color: #1E293B; color: #64748B; border: 1px solid #334155;'>🧪 STERILE / NO REPLICON FOUND</div>", unsafe_allow_html=True)
+        st.markdown("<div style='color: #64748B; font-size: 0.75rem; margin-top: 8px; text-align: center;'>해당 구역은 샘플 누락 구역이거나 멸균 상태(Sterile) 코드가 유지되고 있습니다.</div>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
