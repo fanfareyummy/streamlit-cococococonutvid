@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 import json
 
-# --- 1. 임상 관제 센터 레이아웃 및 3D 홀로그램 스타일링 ---
+# --- 1. 페이지 설정 및 메디컬 다크 UI ---
 st.set_page_config(
-    page_title="글로벌 감염병 통제 시스템",
-    page_icon="🔮",
+    page_title="글로벌 감염병 통제 시스템 v5.2",
+    page_icon="🌍",
     layout="wide",
 )
 
@@ -14,14 +14,14 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&display=swap');
 
     .stApp { 
-        background: #020617;
+        background: #020408;
         color: #F8FAFC;
         font-family: 'Noto Sans KR', sans-serif;
     }
 
-    /* 상단 보건 통제 센터 헤더 */
+    /* 상단 헤더: 네온 블루 테두리 */
     .gate-header {
-        border-bottom: 2px solid #06B6D4;
+        border-bottom: 2px solid #22D3EE;
         padding-bottom: 12px;
         margin-bottom: 20px;
         display: flex;
@@ -32,33 +32,33 @@ st.markdown("""
         font-size: 1.5rem;
         font-weight: 700;
         color: #22D3EE;
-        text-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+        text-shadow: 0 0 15px rgba(34, 211, 238, 0.4);
     }
     .gate-status {
-        background: rgba(6, 182, 212, 0.1);
-        border: 1px solid #06B6D4;
+        background: rgba(34, 211, 238, 0.1);
+        border: 1px solid #22D3EE;
         padding: 4px 12px;
         border-radius: 4px;
         font-size: 0.8rem;
-        color: #38BDF8;
+        color: #22D3EE;
     }
 
-    /* 가로형 하단 제어 통제판 (절대 깨지지 않는 유연한 박스) */
-    .control-center-deck {
+    /* 하단 가로형 고정 제어 패널 */
+    .control-deck {
         background: rgba(15, 23, 42, 0.9);
         border: 1px solid #1E293B;
-        border-top: 3px solid #06B6D4;
+        border-top: 3px solid #22D3EE;
         border-radius: 16px;
         padding: 22px;
         margin-top: 25px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.7);
     }
 
-    div[data-baseweb="input"] { background-color: #020617 !important; border: 1px solid #334155 !important; }
+    div[data-baseweb="input"] { background-color: #020408 !important; border: 1px solid #1E293B !important; }
     
-    .clinical-brief {
-        background: rgba(6, 182, 212, 0.03);
-        border-left: 4px solid #06B6D4;
+    .report-box {
+        background: rgba(34, 211, 238, 0.05);
+        border-left: 4px solid #22D3EE;
         padding: 15px;
         border-radius: 0 8px 8px 0;
         font-size: 0.85rem;
@@ -68,14 +68,12 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
-# --- 2. 임상 아카이브 데이터 로드 ---
+# --- 2. 역학 데이터 로드 ---
 @st.cache_data
 def load_data():
     file_name = "covid_risk_analysis_result.csv"
     try:
         data = pd.read_csv(file_name)
-        # 웹 프레임과 호환을 위해 필수 칼럼만 정제
         return data[['위도', '경도', 'cluster']].dropna()
     except:
         return None
@@ -83,140 +81,130 @@ def load_data():
 df = load_data()
 
 if df is None:
-    st.error("🔬 데이터 통신 실패: 'covid_risk_analysis_result.csv' 파일을 읽을 수 없습니다.")
+    st.error("🔬 데이터 동기화 실패: 'covid_risk_analysis_result.csv' 파일을 확인하십시오.")
     st.stop()
 
-
-# --- 3. 시스템 헤더 배치 ---
+# --- 3. 시스템 헤더 ---
 st.markdown("""
     <div class='gate-header'>
         <div class='gate-title'>🏥 글로벌 코로나 위험 분석 및 통제 시스템</div>
-        <div class='gate-status'>● 3D 홀로그램 코어 네트워크 연결됨</div>
+        <div class='gate-status'>● 고대비 홀로그램 엔진 가동 중</div>
     </div>
 """, unsafe_allow_html=True)
 
+# --- 4. 중앙 레이아웃 (좌측: 고대비 3D 지구본 / 우측: 의학 비디오) ---
+col_left, col_right = st.columns([2.1, 1.9])
 
-# --- 4. 중앙 2분할 레이아웃 (좌측: 진짜 3D 구체 홀로그램 / 우측: 의학 비디오) ---
-col_left_globe, col_right_info = st.columns([2.1, 1.9])
-
-with col_left_globe:
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#22D3EE; margin-bottom:5px;'>⚙️ 실시간 웹 가속 기반 3D 디지털 홀로그램 구체</p>", unsafe_allow_html=True)
+with col_left:
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#22D3EE; margin-bottom:5px;'>⚙️ 3D 고대비 관제 구체 (대륙: 어둡게 / 바다: 밝게)</p>", unsafe_allow_html=True)
     
-    # 파이썬 데이터셋을 자바스크립트용 JSON 데이터로 바인딩
     points_json = json.dumps(df.to_dict(orient="records"))
     
-    # [핵심] Three.js 기반 3D 글로벌 구체 엔진 주입 (종이 지도 탈피)
+    # [핵심] 대륙 어둡게, 바다 밝게 세팅한 Three.js Globe.gl 엔진
     hologram_globe_html = f"""
-    <div style="background: radial-gradient(circle at center, #0B192C 0%, #020617 100%); border: 1px solid #1E293B; border-radius: 24px; padding: 15px; box-shadow: 0 0 30px rgba(6,182,212,0.15); text-align: center;">
-        <div id="globe-3d-canvas" style="width: 100%; height: 460px;"></div>
-        <div style="width: 70%; height: 8px; background: linear-gradient(90deg, transparent, #06B6D4, transparent); margin: 5px auto 0 auto; border-radius: 50%; box-shadow: 0 10px 25px #06B6D4; opacity: 0.6;"></div>
+    <div style="background: radial-gradient(circle at center, #0B192C 0%, #020408 100%); border: 1px solid #1E293B; border-radius: 24px; padding: 15px; box-shadow: inset 0 0 50px rgba(34,211,238,0.15);">
+        <div id="hologram-globe" style="width: 100%; height: 460px;"></div>
+        <div style="width: 80%; height: 10px; background: linear-gradient(90deg, transparent, #22D3EE, transparent); margin: 5px auto 0 auto; border-radius: 50%; box-shadow: 0 10px 20px #22D3EE; opacity: 0.5;"></div>
         
         <script src="https://unpkg.com/globe.gl"></script>
         <script>
             const rawData = {points_json};
             
-            // 데이터 매핑 가공
             const gData = rawData.map(d => ({{
                 lat: d['위도'],
                 lng: d['경도'],
-                size: d['cluster'] == 2 ? 0.6 : (d['cluster'] == 1 ? 0.4 : 0.2),
-                color: d['cluster'] == 2 ? '#F43F5E' : (d['cluster'] == 1 ? '#FB923C' : '#22D3EE')
+                size: d['cluster'] == 2 ? 0.7 : (d['cluster'] == 1 ? 0.45 : 0.25),
+                color: d['cluster'] == 2 ? '#FF0055' : (d['cluster'] == 1 ? '#FFAA00' : '#00F2FF')
             }}));
 
-            // 3D 구체(Globe) 컨텍스트 생성 및 초기화
             const globe = Globe()
-                (document.getElementById('globe-3d-canvas'))
-                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-dark.jpg') // 실제 구체 텍스처 랩핑
-                .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-                .backgroundColor('rgba(0,0,0,0)') // 투명 우주 배경
+                (document.getElementById('hologram-globe'))
+                // 바다를 밝은 색으로, 대륙을 어둡게 표현하는 고대비 텍스처 적용
+                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg') 
+                .backgroundColor('rgba(0,0,0,0)')
                 .pointsData(gData)
                 .pointRadius('size')
                 .pointColor('color')
-                .pointAltitude(0.02)
-                .pointLabel(d => `위험도 단계`)
+                .pointAltitude(0.03)
+                .pointLabel(d => `상태 판독 완료`)
                 .controlsMaxZoom(3);
 
-            // 홀로그램 관제실 특유의 청록빛 네온 대기 질감 투사
-            globe.scene().fog = new THREE.FogExp2('#06B6D4', 0.002);
+            // 지구본 자체의 색감을 조절하여 바다를 더 밝게, 대륙을 더 어둡게 필터링 효과
+            globe.scene().background = null;
             
-            // 자동 자전 궤도 생성 (홀로그램 회전 효과)
+            // 홀로그램 자전 속도 설정
             globe.controls().autoRotate = true;
-            globe.controls().autoRotateSpeed = 1.2;
+            globe.controls().autoRotateSpeed = 0.8;
             
-            // 초기 배율 설정
-            globe.pointOfView({{ lat: 20, lng: 110, alt: 1.8 }});
+            // 초기 시점 설정 (한국/아시아 중심)
+            globe.pointOfView({{ lat: 30, lng: 120, alt: 2.0 }});
         </script>
         
-        <div style="text-align: right; margin-top: 5px; font-size: 0.75rem;">
-            <span style="color:#F43F5E;">■</span> 매우 높은 위험 &nbsp;&nbsp;
-            <span style="color:#FB923C;">■</span> 중간 위험 &nbsp;&nbsp;
-            <span style="color:#22D3EE;">■</span> 낮은 위험
+        <div style="text-align: right; margin-top: 8px; font-size: 0.75rem; color: #94A3B8;">
+            <span style="color:#FF0055;">●</span> 매우 높은 위험 &nbsp;&nbsp;
+            <span style="color:#FFAA00;">●</span> 중간 위험 &nbsp;&nbsp;
+            <span style="color:#00F2FF;">●</span> 낮은 위험
         </div>
     </div>
     """
-    # 스트림릿 내부에 보안 격리를 해제하고 3D 엔진 직접 투사
-    st.components.v1.html(hologram_globe_html, height=520, scrolling=False)
+    st.components.v1.html(hologram_globe_html, height=530)
 
-with col_right_info:
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#38BDF8; margin-bottom:5px;'>📹 역학 조사 실험 결과 피드: 손씻기 6단계 분석</p>", unsafe_allow_html=True)
+with col_right:
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#22D3EE; margin-bottom:5px;'>📹 의학 분석 데이터: 올바른 손씻기 6단계 중요성</p>", unsafe_allow_html=True)
     st.video("https://www.youtube.com/watch?v=aE0MEPeaks4")
     
     st.markdown("""
-        <div class='clinical-brief'>
-            <b style='color:#FFF; font-size:0.9rem;'>🔬 CDC 감염병 역학 보고서: 최신 데이터 분석</b><br>
-            • <b>종합 방어망 가동:</b> 코로나19 확산기 국민들의 손씻기 실천율이 14.2% 상승함에 따라 타 감염병(식중독, 결막염) 환자 수가 통계학적 최저치를 경신했습니다.<br>
-            • <b>위생 불일치 통계:</b> 2,000명 관찰조사 결과 60% 이상이 비누 없이 물로만 세척하여 세균 전파 리스크가 여전히 높게 잔존하고 있습니다.<br>
-            • <b>6단계 타겟 요격:</b> 장갑 물감 실험 결과, 1단계(손바닥) 세척법으로는 손등과 엄지손가락, 손톱 밑의 미생물이 전혀 제거되지 않으므로 질병관리청 공인 6단계 프로토콜을 반드시 이행해야 합니다.
+        <div class='report-box'>
+            <b style='color:#FFF; font-size:0.9rem;'>🔬 보건복지부/질병관리청 임상 분석 데이터</b><br>
+            • <b>데이터 시각화 결과:</b> 현재 좌측 3D 구체 상에 표시된 노란색과 빨간색 지점은 병원균 활동이 활발한 요주의 지역입니다.<br>
+            • <b>영상 핵심 보고:</b> 비누 없이 물로만 씻는 경우 세균 제거율이 현저히 낮아지며, 이는 3D 맵 상의 고위험군 확산의 직접적 원인이 됩니다.<br>
+            • <b>6단계 처방:</b> 장갑 물감 실험에서 증명되었듯, 손바닥만 씻는 행위는 사각지대를 남기므로 반드시 6단계 공인 수칙을 준수해야 합니다.
         </div>
     """, unsafe_allow_html=True)
 
-
-# --- 5. 하단 가로형 고정 임상 분석 제어판 (절대 안 깨짐) ---
-st.markdown("<div class='control-center-deck'>", unsafe_allow_html=True)
+# --- 5. 하단 3분할 가로형 제어 패널 ---
+st.markdown("<div class='control-deck'>", unsafe_allow_html=True)
 col_lbl, col_in, col_out = st.columns([1.1, 1.4, 1.5])
 
 with col_lbl:
     st.markdown("""
-        <div style='border-left: 3px solid #06B6D4; padding-left: 12px;'>
-            <div style='font-size: 0.95rem; font-weight: bold; color: #E2E8F0;'>분석 제어 및 빠른 검색</div>
-            <div style='font-size: 0.75rem; color: #475569; margin-top: 4px;'>역학 조사가 필요한 국소 지역의 위경도를 입력하십시오.</div>
+        <div style='border-left: 3px solid #22D3EE; padding-left: 12px;'>
+            <div style='font-size: 0.95rem; font-weight: bold; color: #F1F5F9;'>역학 조사 제어 데크</div>
+            <div style='font-size: 0.75rem; color: #64748B; margin-top: 4px;'>특정 위경도를 입력하여 반경 내 리스크를 정밀 스캔하십시오.</div>
         </div>
     """, unsafe_allow_html=True)
 
 with col_in:
-    st.markdown("<span style='color: #38BDF8; font-size: 0.75rem; font-weight: bold;'>지정 좌표 실시간 추적 레이더</span>", unsafe_allow_html=True)
-    lay_lat, lay_lon = st.columns(2)
-    with lay_lat:
-        lat = st.number_input("위도값", value=10.80, format="%.2f", label_visibility="collapsed")
-    with lay_lon:
-        lon = st.number_input("경도값", value=106.60, format="%.2f", label_visibility="collapsed")
-    st.caption("🔍 지정 좌표 반경 500km 내 오염 확산 징후를 판독합니다.")
+    st.markdown("<span style='color: #22D3EE; font-size: 0.75rem; font-weight: bold;'>지점 좌표 타겟팅</span>", unsafe_allow_html=True)
+    in_lat, in_lon = st.columns(2)
+    with in_lat:
+        lat = st.number_input("위도", value=10.80, format="%.2f", label_visibility="collapsed")
+    with in_lon:
+        lon = st.number_input("경도", value=106.60, format="%.2f", label_visibility="collapsed")
+    st.caption("🔍 지정 좌표 기준 실시간 바이러스 밀도를 판독합니다.")
 
 with col_out:
     near_df = df[(df['위도'] >= lat-5) & (df['위도'] <= lat+5) & 
                  (df['경도'] >= lon-5) & (df['경도'] <= lon+5)]
     
-    st.markdown("<span style='color: #22D3EE; font-size: 0.75rem; font-weight: bold;'>보건안전부 긴급 진단 통보</span>", unsafe_allow_html=True)
-    st.markdown("<div style='margin-top: 5px;'></div>", unsafe_allow_html=True)
+    st.markdown("<span style='color: #22D3EE; font-size: 0.75rem; font-weight: bold;'>통제 센터 최종 판정</span>", unsafe_allow_html=True)
     
     if not near_df.empty:
-        main_cluster = int(near_df['cluster'].value_counts().idxmax())
-        h_color = {0: '#22D3EE', 1: '#FB923C', 2: '#F43F5E'}[main_cluster]
-        h_text = {0: '낮은 위험 단계 🟡', 1: '중간 위험 단계 🟠', 2: '매우 높은 위험 단계 🔴'}[main_cluster]
+        main_c = int(near_df['cluster'].value_counts().idxmax())
+        h_color = {0: '#22D3EE', 1: '#FFAA00', 2: '#FF0055'}[main_c]
+        h_text = {0: '낮은 위험 단계 🛡️', 1: '중간 위험 단계 ⚠️', 2: '매우 높은 위험 단계 ☣️'}[main_c]
         
         st.markdown(f"""
-            <div style='background:{h_color}12; color:{h_color}; border:1px solid {h_color}AA; padding:9px; border-radius:6px; text-align:center; font-weight:700; font-size:0.9rem;'>
-                현재 구역 상태: {h_text}
+            <div style='background:{h_color}15; color:{h_color}; border:1px solid {h_color}88; padding:9px; border-radius:6px; text-align:center; font-weight:700; font-size:0.9rem;'>
+                분석 결과: {h_text}
             </div>
         """, unsafe_allow_html=True)
         
-        if main_cluster == 2:
-            st.error("☣️ 고오염성 감염 궤적 지역입니다. 비누를 사용하여 손톱 밑까지 세척하는 6단계 방역 요법을 즉각 명령합니다.")
-        elif main_cluster == 1:
-            st.warning("⚠️ 주의 관찰 지역입니다. 점막 감염의 통로가 되는 시간당 36회의 무의식적 얼굴 접촉을 제어하십시오.")
+        if main_c == 2:
+            st.error("☣️ 즉시 경고: 비누 사용 30초 이상의 6단계 손씻기를 강제 시행하십시오.")
         else:
-            st.success("🔬 청정 대조 구역입니다. 노래 2회 부르기 주기(30초 임계값)의 표준 예방 수칙을 준수하십시오.")
+            st.success("🔬 안정 수준: 표준 예방 수칙만으로도 통제가 가능합니다.")
     else:
-        st.markdown("<div style='background:#1E293B; color:#475569; padding:9px; border-radius:6px; text-align:center; font-size:0.85rem;'>🧪 비집계 지역 / 미생물 활동 흔적 없음</div>", unsafe_allow_html=True)
+        st.markdown("<div style='background:#1E293B; color:#475569; padding:9px; border-radius:6px; text-align:center; font-size:0.85rem;'>측정 범위 내 데이터 없음</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
