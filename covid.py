@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# 화사하고 깨끗한 의료용 대시보드 스타일 CSS
+# 화사하고 깨끗한 보건소/의료 대시보드 스타일 CSS
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&display=swap');
@@ -50,27 +50,18 @@ st.markdown("""
         font-weight: 500;
     }
 
-    /* 3D 홀로그램 지구본 섹션 */
+    /* 3D 화이트/블루 지구본 섹션 */
     .globe-section {
-        background: white;
-        border: 1px solid #E2E8F0;
+        background: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%);
+        border: 1px solid #BAE6FD;
         border-radius: 24px;
         padding: 15px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    }
-
-    /* 바이러스 분석 카드 */
-    .virus-info-card {
-        background: #F8FAFC;
-        border-radius: 20px;
-        padding: 20px;
-        border: 1px solid #E2E8F0;
-        margin-top: 20px;
+        box-shadow: 0 10px 30px rgba(14, 165, 233, 0.1);
     }
 
     /* 하단 가로형 스마트 제어 패널 (Glassmorphism 적용) */
     .control-panel {
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(10px);
         border: 1px solid #BAE6FD;
         border-top: 4px solid #0EA5E9;
@@ -114,19 +105,18 @@ if df is None:
 # --- 3. 헤더 섹션 ---
 st.markdown("""
     <div class='hospital-header'>
-        <div class='hospital-title'>🩺 스마트 의료 통합 관제 센터 <span>[V6.5 PRO]</span></div>
+        <div class='hospital-title'>🩺 스마트 의료 통합 관제 센터 <span>[V7.0 LIGHT]</span></div>
         <div class='status-badge'>● 실시간 보건 네트워크 활성화됨</div>
     </div>
 """, unsafe_allow_html=True)
 
-# --- 4. 메인 콘텐츠 (좌측: 3D 지구본 / 우측: 바이러스 현미경 & 영상) ---
+# --- 4. 메인 콘텐츠 (좌측: 화사한 3D 지구본 / 우측: 바이러스 현미경 & 영상) ---
 col_globe, col_micro = st.columns([2.1, 1.9])
 
 with col_globe:
     st.markdown("<p style='font-size:0.9rem; font-weight:700; color:#0369A1; margin-bottom:10px;'>🌍 글로벌 병원균 확산 3D 시각화 매트릭스</p>", unsafe_allow_html=True)
     
-    # 하단 제어판에서 입력된 좌표를 미리 받기 위해 순서를 조정하거나 기본값 설정
-    # (Streamlit은 상단부터 실행하므로 나중에 정의될 변수를 위해 기본값을 설정함)
+    # 세션 상태 변수 초기화 (위경도 무빙용)
     if 'lat_val' not in st.session_state: st.session_state.lat_val = 10.80
     if 'lon_val' not in st.session_state: st.session_state.lon_val = 106.60
 
@@ -142,36 +132,42 @@ with col_globe:
             const gData = rawData.map(d => ({{
                 lat: d['위도'], lng: d['경도'],
                 size: d['cluster'] == 2 ? 0.7 : (d['cluster'] == 1 ? 0.45 : 0.25),
-                color: d['cluster'] == 2 ? '#EF4444' : (d['cluster'] == 1 ? '#F59E0B' : '#0EA5E9'),
+                color: d['cluster'] == 2 ? '#FF1E56' : (d['cluster'] == 1 ? '#FFAC1C' : '#00B4D8'),
                 isTarget: false
             }}));
 
-            // 사용자 입력 타겟 좌표 추가
+            // 사용자 입력 타겟 좌표 주입
             gData.push({{
                 lat: {st.session_state.lat_val}, lng: {st.session_state.lon_val},
-                size: 1.5, color: '#22C55E', isTarget: true
+                size: 1.6, color: '#10B981', isTarget: true
             }});
 
             const globe = Globe()
                 (document.getElementById('medical-globe'))
-                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                // [지구본 밝게 조정] 구름이 걷힌 밝고 선명한 화이트/블루 톤의 내추럴 지구 텍스처 적용
+                .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-day.jpg')
                 .backgroundColor('rgba(0,0,0,0)')
                 .pointsData(gData)
                 .pointRadius('size')
                 .pointColor('color')
-                .pointAltitude(d => d.isTarget ? 0.1 : 0.03)
-                .pointLabel(d => d.isTarget ? `🎯 정밀 분석 타겟` : `관찰 데이터`)
+                .pointAltitude(d => d.isTarget ? 0.12 : 0.04)
+                .pointLabel(d => d.isTarget ? `🎯 정밀 임상 추적 타겟` : `병원균 통계 지점`)
                 .controlsMaxZoom(3);
 
-            globe.pointOfView({{ lat: {st.session_state.lat_val}, lng: {st.session_state.lon_val}, alt: 2.0 }}, 1500);
+            // 밝은 메디컬 아우라 광원(Atmosphere) 효과 극대화
+            globe.atmosphereColor('#0EA5E9');
+            globe.atmosphereRadiusScale(0.18);
+
+            // 입력 좌표 이동 및 자전 정지 (추적을 위함)
+            globe.pointOfView({{ lat: {st.session_state.lat_val}, lng: {st.session_state.lon_val}, alt: 1.9 }}, 1500);
             globe.controls().autoRotate = false;
         </script>
         <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.8rem; color: #64748B;">
-            <div style="color: #22C55E; font-weight: bold;">🎯 타겟 록온: {st.session_state.lat_val}°, {st.session_state.lon_val}°</div>
+            <div style="color: #10B981; font-weight: bold;">🎯 타겟 록온 지점: 위도 {st.session_state.lat_val}° / 경도 {st.session_state.lon_val}°</div>
             <div>
-                <span style="color:#EF4444;">●</span> 위중증 &nbsp;&nbsp;
-                <span style="color:#F59E0B;">●</span> 경계 &nbsp;&nbsp;
-                <span style="color:#0EA5E9;">●</span> 안정
+                <span style="color:#FF1E56;">●</span> 고위험 &nbsp;&nbsp;
+                <span style="color:#FFAC1C;">●</span> 중위험 &nbsp;&nbsp;
+                <span style="color:#00B4D8;">●</span> 안정구역
             </div>
         </div>
     </div>
@@ -181,7 +177,7 @@ with col_globe:
 with col_micro:
     st.markdown("<p style='font-size:0.9rem; font-weight:700; color:#0369A1; margin-bottom:10px;'>🔬 바이러스 미생물 분석 리포트</p>", unsafe_allow_html=True)
     
-    # 검색된 바이러스 GIF 이미지 삽입
+    # 현미경 코로나 바이러스 구조 GIF
     st.image("http://googleusercontent.com/image_collection/image_retrieval/11640972239884877934", caption="현미경으로 관찰된 코로나 바이러스 구조 (실시간 렌더링)", use_container_width=True)
     
     st.markdown("""<div style='margin-top:20px;'></div>""", unsafe_allow_html=True)
@@ -203,7 +199,7 @@ st.markdown("<div class='control-panel'>", unsafe_allow_html=True)
 c_desc, c_input, c_result = st.columns([1, 1.4, 1.6])
 
 with c_desc:
-    # 의료 센터 로고 스타일 이미지 삽입
+    # 의료 기기 로고 스타일 이미지
     st.image("http://googleusercontent.com/image_collection/image_retrieval/9673394217972218586", width=80)
     st.markdown("""
         <div style='margin-top: 10px;'>
@@ -220,7 +216,6 @@ with c_input:
     with i_lon:
         lon_in = st.number_input("경도", value=106.60, format="%.2f", label_visibility="collapsed", key="lon_input")
     
-    # 입력값을 세션 상태에 저장하여 지도와 동기화
     st.session_state.lat_val = lat_in
     st.session_state.lon_val = lon_in
     st.caption("🎯 위경도를 입력하고 Enter를 누르면 실시간 록온이 시작됩니다.")
