@@ -14,7 +14,7 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&display=swap');
 
     .stApp { 
-        background: linear-gradient(135deg, #09111E 0%, #050A12 100%);
+        background: linear-gradient(135deg, #050A14 0%, #02040A 100%);
         color: #E2E8F0;
         font-family: 'Noto Sans KR', sans-serif;
     }
@@ -45,28 +45,28 @@ st.markdown("""
 
     /* 홀로그램 프로젝터 장치 프레임 */
     .hologram-deck {
-        background: radial-gradient(circle at center, #0B192C 0%, #050C16 100%);
+        background: radial-gradient(circle at center, #0B192C 0%, #02040A 100%);
         border: 2px solid #1E293B;
         border-radius: 24px;
         padding: 20px;
-        box-shadow: 0 0 40px rgba(6, 182, 212, 0.15);
+        box-shadow: 0 0 50px rgba(6, 182, 212, 0.2);
         position: relative;
     }
 
     /* 홀로그램 하단 원형 프로젝터 베이스 기기 재현 */
     .projector-base {
         width: 100%;
-        height: 12px;
+        height: 15px;
         background: linear-gradient(90deg, #1E293B 0%, #06B6D4 50%, #1E293B 100%);
         border-radius: 50%;
-        margin-top: -15px;
-        box-shadow: 0 10px 30px rgba(6, 182, 212, 0.4);
-        opacity: 0.7;
+        margin-top: -10px;
+        box-shadow: 0 15px 35px rgba(6, 182, 212, 0.5);
+        opacity: 0.8;
     }
 
     /* 하단 가로형 고정 임상 분석 제어판 (UI 깨짐 완벽 방지) */
     .control-console {
-        background: rgba(15, 23, 42, 0.9);
+        background: rgba(15, 23, 42, 0.95);
         border: 1px solid #334155;
         border-top: 3px solid #06B6D4;
         border-radius: 16px;
@@ -76,7 +76,7 @@ st.markdown("""
     }
 
     /* 인풋 박스 메디컬 스타일링 */
-    div[data-baseweb="input"] { background-color: #050A12 !important; border: 1px solid #334155 !important; }
+    div[data-baseweb="input"] { background-color: #02040A !important; border: 1px solid #334155 !important; }
     
     .report-card {
         background: rgba(6, 182, 212, 0.04);
@@ -97,12 +97,11 @@ def load_epidemic_data():
     file_name = "covid_risk_analysis_result.csv"
     try:
         data = pd.read_csv(file_name)
-        # 이미지 속 3가지 위험도 색상 노드 매핑 (민트 계열 홀로그램 맵과 대비 효과)
-        # 0: 노랑, 1: 주황, 2: 빨강 (반투명 발광 효과를 위해 알파값 조정)
+        # 위성 지구본 위에 쨍하게 튀도록 네온 컬러 스케일 조정
         def assign_rgba(cluster):
-            if cluster == 0: return [254, 240, 138, 180] # 낮은 위험 (노랑)
-            if cluster == 1: return [249, 115, 22, 210]  # 중간 위험 (주황)
-            return [239, 68, 68, 240]                    # 매우 높은 위험 (빨강)
+            if cluster == 0: return [34, 211, 238, 200]  # 밝은 민트 (낮은 위험)
+            if cluster == 1: return [251, 146, 60, 220]  # 형광 오렌지 (중간 위험)
+            return [244, 63, 94, 255]                    # 핫핑크 레드 (매우 높은 위험)
             
         data['color'] = data['cluster'].apply(assign_rgba)
         return data
@@ -116,7 +115,7 @@ if df is None:
 
 
 # --- 3. 위험 지수 정의 테이블 ---
-colors_hex = {0: '#FEF08A', 1: '#F97316', 2: '#EF4444'}
+colors_hex = {0: '#22D3EE', 1: '#FB923C', 2: '#F43F5E'}
 status_kr = {0: '낮은 위험 단계 🟡', 1: '중간 위험 단계 🟠', 2: '매우 높은 위험 단계 🔴'}
 
 
@@ -124,16 +123,16 @@ status_kr = {0: '낮은 위험 단계 🟡', 1: '중간 위험 단계 🟠', 2: 
 st.markdown("""
     <div class='system-header'>
         <div class='system-title'>🏥 글로벌 코로나 위험 분석 및 통제 시스템</div>
-        <div class='system-tag'>● 실시간 보건 네트워크 연동됨</div>
+        <div class='system-tag'>● 실시간 3D 위성 네트워크 연동됨</div>
     </div>
 """, unsafe_allow_html=True)
 
 
-# --- 5. 2분할 메인 레이아웃 (좌측: 3D 홀로그램 지구본 / 우측: 실시간 위생 검증 비디오) ---
+# --- 5. 2분할 메인 레이아웃 (좌측: 3D 위성 지구본 / 우측: 실시간 위생 검증 비디오) ---
 col_hologram, col_media = st.columns([2.1, 1.9])
 
 with col_hologram:
-    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#22D3EE; margin-bottom:5px;'>⚙️ 3D 홀로그램 입체 병원균 분포 매트릭스</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:0.85rem; font-weight:700; color:#22D3EE; margin-bottom:5px;'>⚙️ 위성 기반 3D 입체 지구본 바이러스 레이더</p>", unsafe_allow_html=True)
     st.markdown("<div class='hologram-deck'>", unsafe_allow_html=True)
     
     # pydeck 3D 가상 레이어 구축
@@ -142,18 +141,24 @@ with col_hologram:
         df,
         get_position=["경도", "위도"],
         get_fill_color="color",
-        get_radius=85000,
+        get_radius=90000, # 대륙 지도 크기에 맞춘 포인트 스케일
         pickable=True,
-        opacity=0.85,
+        opacity=0.9,
         filled=True,
     )
     
-    # 민트색 홀로그램 우주 구체 공간 연출
+    # 실제 대륙 윤곽과 바다가 표현되는 위성 텍스처 3D 지구본 구현
     st.pydeck_chart(pdk.Deck(
         layers=[layer],
-        initial_view_state=pdk.ViewState(latitude=22, longitude=20, zoom=0.5, pitch=5, bearing=0),
-        views=[pdk.View(type="_GlobeView", controller=True)],
-        map_style=None, 
+        initial_view_state=pdk.ViewState(
+            latitude=25, 
+            longitude=120, # 아시아 대륙 중심 초기 뷰포트
+            zoom=0.2, # 지구 전체가 한눈에 들어오는 배율
+            pitch=0, 
+            bearing=0
+        ),
+        views=[pdk.View(type="_GlobeView", controller=True)], # 입체 구체 뷰 활성화
+        map_style=pdk.map_styles.SATELLITE, # [핵심] 실제 종이가 아닌 우주 속 지구본 텍스처 적용
         tooltip={"text": "위험 등급 기전: {cluster}\n측정 좌표: {위도}, {경도}"}
     ))
     
@@ -163,10 +168,10 @@ with col_hologram:
     # 이미지 우측 하단 범례 박스 완벽 복제
     st.markdown("""
         <div style='text-align: right; margin-top: 15px;'>
-            <div style='display: inline-block; background: rgba(15, 23, 42, 0.8); border: 1px solid #1E293B; border-radius: 8px; padding: 8px 12px; text-align: left; font-size: 0.8rem;'>
-                <span style='color:#EF4444;'>🔴</span> 매우 높은 위험<br>
-                <span style='color:#F97316;'>🟠</span> 중간 위험<br>
-                <span style='color:#FEF08A;'>🟡</span> 낮은 위험
+            <div style='display: inline-block; background: rgba(15, 23, 42, 0.9); border: 1px solid #1E293B; border-radius: 8px; padding: 8px 12px; text-align: left; font-size: 0.8rem;'>
+                <span style='color:#F43F5E;'>🔴</span> 매우 높은 위험<br>
+                <span style='color:#FB923C;'>🟠</span> 중간 위험<br>
+                <span style='color:#22D3EE;'>🟡</span> 낮은 위험
             </div>
         </div>
     """, unsafe_allow_html=True)
