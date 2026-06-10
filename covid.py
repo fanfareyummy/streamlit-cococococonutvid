@@ -9,10 +9,10 @@ st.set_page_config(
     layout="wide",
 )
 
-# 화사하고 깨끗한 의료 대시보드 스타일 CSS
+# 화사하고 깨끗한 의료 대시보드 스타일 및 [자체 생산 3D 바이러스 GIF 효과] CSS
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=300;500;700&display=swap');
 
     .stApp { 
         background: linear-gradient(135deg, #F0F9FF 0%, #FFFFFF 100%);
@@ -36,9 +36,6 @@ st.markdown("""
         font-size: 1.8rem;
         font-weight: 700;
         color: #0369A1;
-        display: flex;
-        align-items: center;
-        gap: 10px;
     }
     .status-badge {
         background: #E0F2FE;
@@ -57,6 +54,50 @@ st.markdown("""
         border-radius: 24px;
         padding: 15px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 🚨 [치트키] 외부 GIF 대체용 순수 브라우저 연산 3D 로테이팅 바이러스 배양 챔버 */
+    .pure-css-virus-chamber {
+        background: radial-gradient(circle at center, #1E3A8A 0%, #0F172A 100%);
+        height: 280px;
+        border-radius: 20px;
+        border: 4px solid #E2E8F0;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: inset 0 0 40px rgba(0, 242, 255, 0.3);
+    }
+    
+    /* 입체 구형 회전 효과 */
+    .rotating-corona-sphere {
+        font-size: 90px;
+        animation: coronaOrbit 6s linear infinite;
+        filter: drop-shadow(0 0 20px #22C55E);
+        user-select: none;
+    }
+
+    /* 단면 분석 레이저 라인 스캔 레이어 */
+    .scanner-laser-line {
+        position: absolute;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, rgba(0,242,255,0) 0%, rgba(0,242,255,1) 50%, rgba(0,242,255,0) 100%);
+        box-shadow: 0 0 15px #00F2FF;
+        animation: laserScan 3.5s ease-in-out infinite;
+    }
+
+    @keyframes coronaOrbit {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.1); }
+        100% { transform: rotate(360deg) scale(1); }
+    }
+
+    @keyframes laserScan {
+        0% { top: 5%; }
+        50% { top: 90%; }
+        100% { top: 5%; }
     }
 
     /* 하단 가로형 스마트 제어 패널 */
@@ -105,12 +146,12 @@ if df is None:
 # --- 3. 헤더 섹션 ---
 st.markdown("""
     <div class='hospital-header'>
-        <div class='hospital-title'>🩺 스마트 의료 통합 관제 센터 <span>[V8.5 FINAL]</span></div>
-        <div class='status-badge'>● 의학 애니메이션 GIF 렌더링 활성화</div>
+        <div class='hospital-title'>🩺 스마트 의료 통합 관제 센터 <span>[V9.0 INFINITY]</span></div>
+        <div class='status-badge'>● 100% 로컬 자체 그래픽 제로-크래시 엔진 가동</div>
     </div>
 """, unsafe_allow_html=True)
 
-# --- 4. 메인 콘텐츠 (좌측: 3D 지구본 + 하단 통계 / 우측: 바이러스 구조 GIF + 영상) ---
+# --- 4. 메인 콘텐츠 (좌측: 3D 지구본 + 보건 데이터 / 우측: 자체 회전 코로나 GIF 시뮬레이터 + 영상) ---
 col_globe, col_media = st.columns([2.1, 1.9])
 
 with col_globe:
@@ -165,7 +206,7 @@ with col_globe:
     """
     st.components.v1.html(hologram_globe_html, height=450)
 
-    # 지구본 아래 텅 비어있던 하단 원 영역을 완벽하게 채워주는 보건 의료 통계 섹션
+    # 지구본 하단 공백 완벽 차단 매트릭스
     st.markdown("<div style='margin-top:15px;'></div>", unsafe_allow_html=True)
     m1, m2, m3 = st.columns(3)
     with m1:
@@ -176,15 +217,28 @@ with col_globe:
         st.metric(label="🧬 유전자 서열 일치율", value="99.8%", delta="변이 확인")
 
 with col_media:
-    # 🚨 [핵심 반영] 그래프 전면 제거! 깨지지 않는 공인 의료 과학 애니메이션 GIF 장착
-    st.markdown("<p style='font-size:0.9rem; font-weight:700; color:#0369A1; margin-bottom:10px;'>🔬 SARS-CoV-2 (코로나 바이러스) 입체 구조 분석 시뮬레이션</p>", unsafe_allow_html=True)
+    # 🚨 [전면 개정] 외부 서버 주소를 다 뜯어내고, 100% 깨짐 없는 입체 궤도 회전 스캐너 구축
+    st.markdown("<p style='font-size:0.9rem; font-weight:700; color:#0369A1; margin-bottom:10px;'>🔬 SARS-CoV-2 (코로나 바이러스) 입체 현미경 단면 시뮬레이터</p>", unsafe_allow_html=True)
     
-    # 공인 의학 아카이브의 고해상도 코로나 바이러스 3D 로테이션 GIF 투입 (절대 차단되거나 깨지지 않음)
-    st.image(
-        "https://upload.wikimedia.org/wikipedia/commons/9/9c/SARS-CoV-2_Infection_Cycle.gif", 
-        caption="코로나 바이러스 구조 및 인체 세포 결합 메커니즘 (실시간 애니메이션)", 
-        use_container_width=True
-    )
+    st.markdown("""
+        <div class='pure-css-virus-chamber'>
+            <div class='scanner-laser-line'></div>
+            <div class='rotating-corona-sphere'>🦠</div>
+            <div style='position:absolute; top:15px; right:20px; text-align:right; color:#00F2FF; font-family:monospace; font-size:0.75rem; line-height:1.4;'>
+                SYS_STATUS: SCANNING...<br>
+                SPIKE_PROTEIN: DETECTED<br>
+                RNA_MUTATION: 87.3%
+            </div>
+            <div style='position:absolute; bottom:15px; left:20px; color:#64748B; font-size:0.75rem; font-weight:500; color: white;'>
+                ⚠️ 외부 링크 단절 대응: 브라우저 실시간 하드웨어 가속 렌더링 가동 중
+            </div>
+        </div>
+        
+        <div style='background: white; border:1px solid #E2E8F0; padding:12px; border-radius:12px; margin-top:10px; font-size:0.8rem; color:#475569;'>
+            <b>🧬 입체 형태 분석 리포트:</b><br>
+            중앙의 <b>구형 코어(Core)</b> 외부 표면에 왕관 모양의 <span style='color:#EF4444; font-weight:700;'>돌기 단백질(Spike)</span>들이 불규칙하게 도출되어 있으며, 스캐너가 실시간 수평 단면을 읽어 복제 유전 서열을 해독하고 있습니다.
+        </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("""<div style='margin-top:15px;'></div>""", unsafe_allow_html=True)
     
@@ -194,7 +248,7 @@ with col_media:
     st.markdown(f"""
         <div class='medical-note'>
             <b style='font-size:1rem; color:#0369A1;'>📑 임상 관찰 요약</b><br>
-            • 상단 GIF에서 보듯 바이러스의 돌기 단백질이 세포에 침투하는 구조를 띄고 있습니다.<br>
+            • 위의 궤도 분석 시뮬레이터가 보여주듯, 바이러스 구조의 외피막은 지질 성분입니다.<br>
             • <b>실험 결과:</b> 비누 없는 물 세척은 바이러스 외벽(Envelop)을 파괴하지 못해 감염력을 유지합니다.<br>
             • <b>해결책:</b> 30초 이상의 6단계 손씻기로 물리적/화학적 사멸을 유도하십시오.
         </div>
